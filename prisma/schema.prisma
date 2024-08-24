@@ -8,32 +8,32 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(cuid())
-  name             String?
-  email            String             @unique
-  password         String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  id                String             @id @default(cuid())
+  name              String?
+  email             String             @unique
+  password          String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  organizedEvents   Event[]            @relation("UserEvents")
   eventParticipants EventParticipant[] @relation("UserEventParticipants")
-  organizedEvents  Event[]            @relation("UserEvents")
 }
 
 model Event {
-  id               Int                @id @default(autoincrement())
-  title            String
-  description      String?
-  date             String
-  location         String?
-  isVirtual        Boolean
-  organizerId      String
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  maxAttendees     Int
-  requiresApproval Boolean            @default(false)
+  id                Int                @id @default(autoincrement())
+  title             String
+  description       String?
+  date              String
+  location          String?
+  isVirtual         Boolean
+  organizerId       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  maxAttendees      Int
+  requiresApproval  Boolean            @default(false)
+  version           Int                @default(0)
+  organizer         User               @relation("UserEvents", fields: [organizerId], references: [id])
   eventParticipants EventParticipant[] @relation("EventParticipants")
-  organizer        User               @relation("UserEvents", fields: [organizerId], references: [id])
-  categories       Category[]         @relation("EventCategories")
-  version          Int                @default(0)
+  categories        Category[]         @relation("EventCategories")
 }
 
 model EventParticipant {
@@ -43,16 +43,16 @@ model EventParticipant {
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  version   Int      @default(0)
   event     Event    @relation("EventParticipants", fields: [eventId], references: [id])
   user      User     @relation("UserEventParticipants", fields: [userId], references: [id])
-  version   Int      @default(0)
 
   @@unique([userId, eventId])
 }
 
 model Category {
-  id     Int     @id @default(autoincrement())
-  name   String  @unique
-  events Event[] @relation("EventCategories")
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
   version Int     @default(0)
+  events  Event[] @relation("EventCategories")
 }
