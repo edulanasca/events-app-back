@@ -2,6 +2,7 @@ import { createSchema } from 'graphql-yoga';
 import { Context } from './graphql_types';
 import { prisma } from './prisma';
 import { Category, EventParticipant } from '@prisma/client';
+import { ApolloError } from 'apollo-server-errors';
 
 const typeDefs = `
 type Query {
@@ -9,6 +10,7 @@ type Query {
     event(id: Int!, includeOrganizer: Boolean, includeParticipants: Boolean, includeCategories: Boolean): Event
     events(includeOrganizer: Boolean, includeParticipants: Boolean, includeCategories: Boolean, skip: Int, take: Int): [Event]
     participants(eventId: Int!, includeUser: Boolean, includeEvent: Boolean): [EventParticipant]
+    category(id: Int!, includeEvents: Boolean): Category
     categories: [Category]
     userEvents(userId: String!, includeOrganizer: Boolean, includeParticipants: Boolean, includeCategories: Boolean): [Event]
     userOrganizedEvents(userId: String!, includeOrganizer: Boolean, includeParticipants: Boolean, includeCategories: Boolean): [Event]
@@ -18,13 +20,13 @@ type Query {
 
 type Mutation {
     createEvent(title: String!, description: String, date: String, location: String, isVirtual: Boolean!, maxAttendees: Int!, requiresApproval: Boolean!): Event
-    editEvent(id: Int!, title: String, description: String, date: String, location: String, isVirtual: Boolean, maxAttendees: Int, requiresApproval: Boolean): Event
+    editEvent(id: Int!, version: Int!, title: String, description: String, date: String, location: String, isVirtual: Boolean, maxAttendees: Int, requiresApproval: Boolean): Event
     deleteEvent(id: Int!): Event
     createParticipant(eventId: Int!, userId: String!): EventParticipant
-    editParticipant(id: Int!, userId: String, eventId: Int, approved: Boolean): EventParticipant
+    editParticipant(id: Int!, version: Int!, userId: String, eventId: Int, approved: Boolean): EventParticipant
     deleteParticipant(id: Int!): EventParticipant
     createCategory(name: String!): Category
-    editCategory(id: Int!, name: String!): Category
+    editCategory(id: Int!, version: Int!, name: String!): Category
     deleteCategory(id: Int!): Category
     addCategoryToEvent(eventId: Int!, categoryId: Int!): Event
     approveUser(eventId: Int!, userId: String!): EventParticipant
@@ -45,6 +47,7 @@ type Event {
     requiresApproval: Boolean
     participants: [EventParticipant]
     categories: [Category]
+    version: Int!
 }
 
 type User {
@@ -60,12 +63,14 @@ type EventParticipant {
     user: User!
     event: Event!
     approved: Boolean!
+    version: Int!
 }
 
 type Category {
     id: Int!
     name: String!
     events: [Event]
+    version: Int!
 }
 `;
 
@@ -93,6 +98,12 @@ const resolvers = {
                 },
                 skip: skip || 0,
                 take: take || 10
+            });
+        },
+        category: async (_: unknown, { id, includeEvents }: { id: number, includeEvents?: boolean }) => {
+            return await prisma.category.findUnique({
+                where: { id },
+                include: { events: includeEvents || false }
             });
         },
         participants: async (_: unknown, { eventId, includeUser, includeEvent }: { eventId: number, includeUser?: boolean, includeEvent?: boolean }) => {
@@ -137,7 +148,7 @@ const resolvers = {
         },
         checkApprovalStatus: async (_: unknown, { eventId }: { eventId: number }, context: Context) => {
             if (!context.user) {
-                throw new Error("Not authenticated");
+                throw new ApolloError("Not authenticated", "UNAUTHENTICATED");
             }
             return await prisma.eventParticipant.findFirst({
                 where: {
@@ -158,7 +169,7 @@ const resolvers = {
     Mutation: {
         createEvent: async (_: unknown, args: { title: string, description?: string, date?: string, location?: string, isVirtual: boolean, maxAttendees: number, requiresApproval: boolean }, context: Context) => {
             if (!context.user) {
-                throw new Error("Not authenticated");
+                throw new ApolloError("Not authenticated", "UNAUTHENTICATED");
             }
             return await prisma.event.create({
                 data: {
@@ -173,10 +184,17 @@ const resolvers = {
                 }
             });
         },
-        editEvent: async (_: unknown, { id, ...args }: { id: number, [key: string]: unknown }) => {
+        editEvent: async (_: unknown, { id, version, ...args }: { id: number, version: number, [key: string]: unknown }) => {
+            const event = await prisma.event.findUnique({ where: { id } });
+            if (event && event.version !== version) {
+                throw new ApolloError("Version conflict", "VERSION_CONFLICT");
+            }
             return await prisma.event.update({
                 where: { id },
-                data: args
+                data: {
+                    ...args,
+                    version: { increment: 1 }
+                }
             });
         },
         deleteEvent: async (_: unknown, { id }: { id: number }) => {
@@ -189,10 +207,17 @@ const resolvers = {
                 data: args
             });
         },
-        editParticipant: async (_: unknown, { id, ...args }: { id: number, [key: string]: unknown }) => {
+        editParticipant: async (_: unknown, { id, version, ...args }: { id: number, version: number, [key: string]: unknown }) => {
+            const participant = await prisma.eventParticipant.findUnique({ where: { id } });
+            if (participant && participant.version !== version) {
+                throw new ApolloError("Version conflict", "VERSION_CONFLICT");
+            }
             return await prisma.eventParticipant.update({
                 where: { id },
-                data: args
+                data: {
+                    ...args,
+                    version: { increment: 1 }
+                }
             });
         },
         deleteParticipant: async (_: unknown, { id }: { id: number }) => {
@@ -205,10 +230,17 @@ const resolvers = {
                 data: args
             });
         },
-        editCategory: async (_: unknown, { id, ...args }: { id: number, [key: string]: unknown }) => {
+        editCategory: async (_: unknown, { id, version, ...args }: { id: number, version: number, [key: string]: unknown }) => {
+            const category = await prisma.category.findUnique({ where: { id } });
+            if (category && category.version !== version) {
+                throw new ApolloError("Version conflict", "VERSION_CONFLICT");
+            }
             return await prisma.category.update({
                 where: { id },
-                data: args
+                data: {
+                    ...args,
+                    version: { increment: 1 }
+                }
             });
         },
         deleteCategory: async (_: unknown, { id }: { id: number }) => {
@@ -234,7 +266,7 @@ const resolvers = {
         },
         joinEvent: async (_: unknown, { eventId }: { eventId: number }, context: Context) => {
             if (!context.user) {
-                throw new Error("Not authenticated");
+                throw new ApolloError("Not authenticated", "UNAUTHENTICATED");
             }
             return await prisma.eventParticipant.create({
                 data: {
