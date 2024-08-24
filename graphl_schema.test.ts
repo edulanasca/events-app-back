@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { prisma, client } from './jest.setup';
 import gql from 'graphql-tag';
 import jwt from 'jsonwebtoken';
@@ -52,7 +55,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -77,7 +80,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -101,7 +104,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -125,7 +128,7 @@ describe('Versioning Tests', () => {
       variables: { id: eventId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -151,7 +154,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -177,7 +180,7 @@ describe('Versioning Tests', () => {
       variables: { id: eventId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -204,7 +207,7 @@ describe('Versioning Tests', () => {
         },
         context: {
           headers: {
-            Cookie: `auth_token=${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         },
       }).catch(error => {
@@ -228,7 +231,7 @@ describe('Versioning Tests', () => {
       variables: { id: participantId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -254,7 +257,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -280,7 +283,7 @@ describe('Versioning Tests', () => {
       variables: { id: participantId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -307,7 +310,7 @@ describe('Versioning Tests', () => {
         },
         context: {
           headers: {
-            Cookie: `auth_token=${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         },
       }).catch(error => {
@@ -331,7 +334,7 @@ describe('Versioning Tests', () => {
       variables: { id: categoryId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -358,7 +361,7 @@ describe('Versioning Tests', () => {
       },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -384,7 +387,7 @@ describe('Versioning Tests', () => {
       variables: { id: categoryId },
       context: {
         headers: {
-          Cookie: `auth_token=${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     }).catch(error => {
@@ -411,7 +414,7 @@ describe('Versioning Tests', () => {
         },
         context: {
           headers: {
-            Cookie: `auth_token=${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         },
       }).catch(error => {
