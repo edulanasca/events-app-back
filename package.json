@@ -1,12 +1,13 @@
 {
   "name": "events-app-back",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "test": "jest",
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "start": "ts-node index.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -37,6 +38,7 @@
     "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^16.4.5",
     "eslint": "^8.57.0",
     "globals": "^15.9.0",
     "graphql-tag": "^2.12.6",
