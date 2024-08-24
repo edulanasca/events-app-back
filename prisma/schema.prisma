@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(cuid())
+  name              String?
+  email             String             @unique
+  password          String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  organizedEvents   Event[]            @relation("UserEvents")
+  eventParticipants EventParticipant[] @relation("UserEventParticipants")
+}
+
+model Event {
+  id                Int                @id @default(autoincrement())
+  title             String
+  description       String?
+  date              String
+  location          String?
+  isVirtual         Boolean
+  organizerId       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  maxAttendees      Int
+  requiresApproval  Boolean            @default(false)
+  version           Int                @default(0)
+  organizer         User               @relation("UserEvents", fields: [organizerId], references: [id])
+  eventParticipants EventParticipant[] @relation("EventParticipants")
+  categories        Category[]         @relation("EventCategories")
+}
+
+model EventParticipant {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  eventId   Int
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  version   Int      @default(0)
+  event     Event    @relation("EventParticipants", fields: [eventId], references: [id])
+  user      User     @relation("UserEventParticipants", fields: [userId], references: [id])
+
+  @@unique([userId, eventId])
+}
+
+model Category {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  version Int     @default(0)
+  events  Event[] @relation("EventCategories")
+}
