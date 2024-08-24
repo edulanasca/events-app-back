@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { loginHandler, registerHandler, logoutHandler } from './auth_handlers';
+import { loginHandler, registerHandler } from './auth_handlers';
 import { yoga } from './graphql_handler';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -17,7 +17,6 @@ app.use(bodyParser.json());
 
 app.post('/api/auth/login', loginHandler);
 app.post('/api/auth/register', registerHandler);
-app.post('/api/auth/logout', logoutHandler);
 app.use(yoga.graphqlEndpoint, yoga);
 
 app.listen(port, () => {

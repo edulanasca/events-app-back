@@ -68,14 +68,3 @@ export const registerHandler = async (req: Request, res: Response) => {
     return res.status(500).json({ data: null, message: 'Registration failed', error: 'Registration failed' });
   }
 };
-
-export const logoutHandler = async (req: Request, res: Response) => {
-  res.cookie('auth_token', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 0,
-  });
-
-  return res.status(200).json({ data: null, message: 'Logout successful', error: null });
-};

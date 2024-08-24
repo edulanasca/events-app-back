@@ -33,6 +33,7 @@ model Event {
   eventParticipants EventParticipant[] @relation("EventParticipants")
   organizer        User               @relation("UserEvents", fields: [organizerId], references: [id])
   categories       Category[]         @relation("EventCategories")
+  version          Int                @default(0)
 }
 
 model EventParticipant {
@@ -44,6 +45,7 @@ model EventParticipant {
   updatedAt DateTime @updatedAt
   event     Event    @relation("EventParticipants", fields: [eventId], references: [id])
   user      User     @relation("UserEventParticipants", fields: [userId], references: [id])
+  version   Int      @default(0)
 
   @@unique([userId, eventId])
 }
@@ -52,4 +54,5 @@ model Category {
   id     Int     @id @default(autoincrement())
   name   String  @unique
   events Event[] @relation("EventCategories")
+  version Int     @default(0)
 }

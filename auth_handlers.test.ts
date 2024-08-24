@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { loginHandler, registerHandler, logoutHandler } from './auth_handlers';
+import { loginHandler, registerHandler } from './auth_handlers';
 import { prisma } from './prisma';
 
 const app = express();
@@ -12,7 +12,6 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.post('/api/auth/login', loginHandler);
 app.post('/api/auth/register', registerHandler);
-app.post('/api/auth/logout', logoutHandler);
 
 jest.mock('./prisma', () => ({
   prisma: {
@@ -100,19 +99,6 @@ describe('Auth Handlers', () => {
       expect(response.status).toBe(201);
       expect(response.body.message).toBe('User registered successfully');
       expect(response.body.data.token).toBeDefined();
-      expect(response.body.error).toBeNull();
-      expect(response.headers['set-cookie']).toBeDefined();
-    });
-  });
-
-  describe('POST /api/auth/logout', () => {
-    it('should return 200 and clear cookie on logout', async () => {
-      const response = await request(app)
-        .post('/api/auth/logout');
-
-      expect(response.status).toBe(200);
-      expect(response.body.message).toBe('Logout successful');
-      expect(response.body.data).toBeNull();
       expect(response.body.error).toBeNull();
       expect(response.headers['set-cookie']).toBeDefined();
     });
