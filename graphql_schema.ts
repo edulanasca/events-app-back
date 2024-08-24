@@ -268,11 +268,12 @@ const resolvers = {
             if (!context.user) {
                 throw new ApolloError("Not authenticated", "UNAUTHENTICATED");
             }
+            const event = await prisma.event.findUnique({ where: { id: eventId } });
             return await prisma.eventParticipant.create({
                 data: {
                     eventId,
                     userId: context.user.id,
-                    approved: false
+                    approved: !event?.requiresApproval // If event doesn't require approval, set approved to true
                 }
             });
         },
