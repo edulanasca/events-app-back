@@ -228,7 +228,7 @@ describe('Versioning Tests', () => {
     `;
     const participantResponse = await client.query({
       query: getParticipantQuery,
-      variables: { id: participantId },
+      variables: { id: eventId },
       context: {
         headers: {
           Authorization: `Bearer ${authToken}`,
