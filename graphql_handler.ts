@@ -25,8 +25,11 @@ const context = async ({ request }: YogaInitialContext): Promise<Context> => {
     return { user };
 };
 
-export const yoga = createYoga({
-    graphqlEndpoint: "/api/graphql",
-    schema,
-    context,
-});
+export function createGraphQLHandler() {
+    // Create and configure your GraphQL handler
+    return createYoga({
+        graphqlEndpoint: "/api/graphql",
+        schema,
+        context,
+    });
+}
